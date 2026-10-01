@@ -400,14 +400,9 @@ func (acc *AccumulatedStreams) push(s *logproto.Stream) {
 		}
 		return acc.less(s.Entries[i].Timestamp, worst)
 	})
-	// The first `room` entries are needed while the accumulator is not full,
-	// regardless of how they compare to the current worst entry: entries arrive
-	// best-first, so once they have been inserted, any later entry of this
-	// stream is worse than the new worst entry of the accumulator.
-	cutoff = max(cutoff, room)
 	s.Entries = s.Entries[:cutoff]
 
-	for i := 0; i < len(s.Entries) && (acc.count < acc.limit || acc.less(worst, s.Entries[i].Timestamp)); i++ {
+	for i := 0; i < len(s.Entries) && acc.less(worst, s.Entries[i].Timestamp); i++ {
 
 		// push one entry at a time
 		room = acc.limit - acc.count
